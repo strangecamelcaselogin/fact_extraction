@@ -1,3 +1,7 @@
+from time import time
+from datetime import datetime
+from prettytable import PrettyTable
+
 from tokenizer import Tokenizer
 
 
@@ -30,14 +34,35 @@ def extract_terms(word_list, count=0, debug=False):
         if debug:
             print('{} {}:: {}'.format(word, (25 - len(word)) * ' ', word.tag))
 
-    term_list = list(reversed(sorted(term_list.items(), key=lambda x: x[1]))) # !!!!!
+    term_list = list(reversed(sorted(term_list.items(), key=lambda x: x[1]))) # ????
 
     return term_list if count == 0 else term_list[:count]
 
 
+def get_sentences(token_list):
+    sentence_list = []
+    for t in token_list:
+        pass
+
+    return sentence_list
+
+
 if __name__ == '__main__':
     raw, tokens, words = load_text('test.txt')
-    print(*words, sep='\n')
 
-    terms = extract_terms(words, count=10)
-    print(terms)
+    table = PrettyTable(['word', 'type'])
+    for t in tokens:
+        table.add_row([t.word, t.type])
+
+    rt = datetime.fromtimestamp(time())
+    print(table, file=open('{}.{}_{}.{}.txt'.format(rt.day, rt.month, rt.hour, rt.minute), 'w'))
+
+    #sentences = get_sentences(tokens)
+    #for s in sentences:
+    #    for word in s:
+    #        print(word.word, sep=' ')
+    #
+    #    print()
+
+    #terms = extract_terms(words, count=10)
+    #print(terms)

@@ -46,25 +46,21 @@ class Tokenizer:
                 if token != '' and token not in Tokenizer.whitespace:
                     if token in Tokenizer.token_type:
                         Tokenizer.append_token(tokens, token, Tokenizer.token_type[token])
-
                     else:
                         Tokenizer.append_token(tokens, token, 'Unk')
 
                 token = value
                 if value in Tokenizer.alphabet:
                     state = 1
-
                 elif value in Tokenizer.digits:
                     state = 3
 
             elif state == 1:  # Очередная буква в слове
                 if value in Tokenizer.alphabet:
                     token += value
-
                 elif value == '-':
                     token += value
                     state = 2
-
                 else:
                     Tokenizer.append_token(tokens, token, 'word')
                     token = value
@@ -73,11 +69,47 @@ class Tokenizer:
             elif state == 2:  # Очередная буква после дефиса
                 if value in Tokenizer.alphabet:
                     token += value
-
                 else:
                     Tokenizer.append_token(tokens, token, 'word')
                     token = value
                     state = 0
+
+            elif state == 3:
+                if value in Tokenizer.digits:
+                    token += value
+                elif value == '.':
+                    token += value
+                    state = 4
+                else:
+                    Tokenizer.append_token(tokens, token, 'int')
+                    token = value
+                    state = 0
+
+            elif state == 4:
+                if value in Tokenizer.digits:
+                    token += value
+                    state = 5
+                elif value == '.':
+                    token += value
+                else:
+                    Tokenizer.append_token(tokens, token, 'par')
+                    token = value
+                    state = 0
+
+            elif state == 5:
+                if value in Tokenizer.digits:
+                    token += value
+                elif value == '.':
+                    token += value
+                    state = 4
+                else:
+                    Tokenizer.append_token(tokens, token, 'float')
+                    token = value
+                    state = 0
+
+
+            '''
+            #  some old
 
             elif state == 3:  # Очередная цифра
                 if value in Tokenizer.digits:
@@ -96,10 +128,18 @@ class Tokenizer:
                 if value in Tokenizer.digits:
                     token += value
 
+                elif value == '.':
+                    token += value
+                    Tokenizer.append_token(tokens, token, 'par')
+                    token = ''
+                    state = 0
+
                 else:
                     Tokenizer.append_token(tokens, token, 'number')
                     token = value
                     state = 0
+
+            '''
 
             if debug:
                 print(state, token)
