@@ -6,54 +6,10 @@ from splitter import Splitter
 
 
 def load_text(filename, debug=False):
-    #
-    #
-    #
-    t = Splitter()
-
     with open(filename, 'r') as f:
         text = f.read()
-        token_list = t.get_tokens(text, debug=debug)
-        t.post_processing(token_list)
 
-    word_list = []
-    for value in token_list:
-        if value.type == 'word' or value.type == 'number':
-            word_list.append(value)
-
-    return text, token_list, word_list
-
-
-def extract_terms(word_list, count=0, debug=False):
-    #
-    #
-    #
-    term_list = dict()
-    for word in word_list:
-
-        if 'NOUN' in word.tag:
-            if word.normal_form in term_list:
-                term_list[word.normal_form] += 1
-            else:
-                term_list[word.normal_form] = 1
-
-        if debug:
-            print('{} {}:: {}'.format(word, (25 - len(word)) * ' ', word.tag))
-
-    term_list = list(reversed(sorted(term_list.items(), key=lambda x: x[1]))) # ????
-
-    return term_list if count == 0 else term_list[:count]
-
-
-def get_sentences(token_list):
-    #
-    #
-    #
-    sentence_list = []
-    for t in token_list:
-        pass
-
-    return sentence_list
+    return text
 
 
 def write_report(data):
@@ -64,22 +20,38 @@ def write_report(data):
             print(d, file=f)
 
 
-if __name__ == '__main__':
-    raw, tokens, words = load_text('test.txt')
-    print(*[t.word for t in tokens], sep=' ')
+def extract_terms(lexeme_list, count=0, debug=False):
+    # Считаем количество использований каждой лексемы в тексте
 
-    table = PrettyTable(['word', 'type'])
-    for t in tokens:
-        table.add_row([t.word, t.type])
+    term_list = dict()
+    for lex in lexeme_list:
+        ftag = lex.morph[0].tag
+        fn_form = lex.morph[0].normal_form
+        if lex.token_type == 'word' and 'NOUN' in ftag:
+            if fn_form in term_list:
+                term_list[fn_form] += 1
+            else:
+                term_list[fn_form] = 1
+
+        if debug:
+            print('{} {}:: {}'.format(lex, (25 - len(lex)) * ' ', ftag))
+
+    term_list = list(reversed(sorted(term_list.items(), key=lambda x: x[1])))
+
+    return term_list if count == 0 else term_list[:count]
+
+
+########################################################################################################################
+if __name__ == '__main__':
+    lexemes = Splitter().run(load_text('test.txt'))
+
+    print(*[lex.word for lex in lexemes])
+
+    table = PrettyTable(['word', 'token_type'])
+    for lex in lexemes:
+        table.add_row([lex.word, lex.token_type])
 
     write_report([table])
 
-    #sentences = get_sentences(tokens)
-    #for s in sentences:
-    #    for word in s:
-    #        print(word.word, sep=' ')
-    #
-    #    print()
-
-    terms = extract_terms(words, count=10)
+    terms = extract_terms(lexemes, count=10)
     print(terms)
