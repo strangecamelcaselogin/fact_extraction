@@ -40,8 +40,8 @@ def extract_terms(lexeme_list, count=0, debug=False):
 
     return term_list if count == 0 else term_list[:count]
 
-
 ########################################################################################################################
+
 if __name__ == '__main__':
     lexemes = Splitter().run(load_text('test.txt'))
 

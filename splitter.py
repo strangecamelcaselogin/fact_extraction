@@ -36,7 +36,7 @@ class Splitter:
 
     def run(self, text):
         self.lexeme_list = self._get_lexemes(text)
-        self._lexemes_post_processing(self.lexeme_list)
+        self._post_processing(self.lexeme_list)
 
         return self.lexeme_list
 
@@ -125,8 +125,8 @@ class Splitter:
         return lexeme_list
 
     @staticmethod
-    def _lexemes_post_processing(lexeme_list):
-        # Убираем лишние _ нишние подчеркивания
+    def _post_processing(lexeme_list):
+        # Убираем лишние _ нижние подчеркивания
 
         trigger = False
         index = 0
@@ -147,11 +147,11 @@ class Splitter:
 
     @staticmethod
     def _get_sentences(lexeme_list):
-        #
+        # Делим список токенов на предложения
 
         sentence_list = []
-        for t in lexeme_list:
-            pass
+        #for t in lexeme_list:
+        #    pass
 
         return sentence_list
 
