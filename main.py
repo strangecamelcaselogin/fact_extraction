@@ -5,7 +5,7 @@ from prettytable import PrettyTable
 from splitter import Splitter
 
 
-def load_text(filename, debug=False):
+def load_text(filename):
     with open(filename, 'r') as f:
         text = f.read()
 
