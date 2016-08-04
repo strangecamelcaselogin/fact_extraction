@@ -12,7 +12,7 @@ def load_text(filename):
     return text
 
 
-def write_report(data):
+def report(data):
     rt = datetime.fromtimestamp(time())
     filename = '{}.{}_{}.{}.txt'.format(rt.day, rt.month, rt.hour, rt.minute)
     with open(filename, 'w') as f:
@@ -22,6 +22,7 @@ def write_report(data):
 
 def extract_terms(lexeme_list, count=0, debug=False):
     # Считаем количество использований каждой лексемы в тексте
+    # ПЕРЕДЕЛАТЬ
 
     term_list = dict()
     for lex in lexeme_list:
@@ -43,15 +44,16 @@ def extract_terms(lexeme_list, count=0, debug=False):
 ########################################################################################################################
 
 if __name__ == '__main__':
-    lexemes = Splitter().run(load_text('test.txt'))
+    splt = Splitter()
 
+    lexemes, _ = splt.run(load_text('test.txt'))
     print(*[lex.word for lex in lexemes])
 
     table = PrettyTable(['word', 'token_type'])
     for lex in lexemes:
         table.add_row([lex.word, lex.token_type])
 
-    write_report([table])
+    report([table])
 
-    terms = extract_terms(lexemes, count=10)
-    print(terms)
+    #terms = extract_terms(lexemes, count=10)
+    #print(terms)

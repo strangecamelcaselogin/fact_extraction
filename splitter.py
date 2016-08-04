@@ -27,7 +27,7 @@ class Splitter:
                   '”': 'ru_quote_close'}
 
     morph = pymorphy2.MorphAnalyzer()
-    Lexeme = collections.namedtuple('Lexeme', ('word', 'token_type', 'morph'))
+    Node = collections.namedtuple('Node', ('word', 'token_type'))
 
     def __init__(self, debug=False):
         self.debug = debug
@@ -35,19 +35,40 @@ class Splitter:
         self.sentence_list = []
 
     def run(self, text):
-        self.lexeme_list = self._get_lexemes(text)
-        self._post_processing(self.lexeme_list)
+        # По идее должна вернуть дерево из абзацев, предложений и токенов...
+        #
 
-        return self.lexeme_list
+        self.lexeme_list = self._get_lexemes(text)
+        self._post_processing()
+
+        self.sentence_list = self._get_sentences(self.lexeme_list)
+
+        return self.lexeme_list, self.sentence_list
+
+    def _post_processing(self):
+        # Убираем лишние _ нижние подчеркивания
+
+        trigger = False
+        index = 0
+        value = self.lexeme_list[index].word
+        while value != '#':
+            if value == '_':
+                if not trigger:
+                    trigger = True
+                    index += 1
+                else:
+                    del self.lexeme_list[index]
+
+            else:
+                trigger = False
+                index += 1
+
+            value = self.lexeme_list[index].word
 
     @staticmethod
     def _get_lexemes(text, debug=False):
         #  Делит текст на лексемы, определяет тип токена, нормальную форму,
         #  а также часть речи, род, падеж, число
-
-        def add(lst, elem, type_):
-            t = Splitter.morph.parse(elem)
-            lst.append(Splitter.Lexeme(elem, type_, t))
 
         lexeme_list = []
         state = 0
@@ -56,12 +77,12 @@ class Splitter:
             if state == 0:
                 if lexeme != '' and lexeme not in Splitter.whitespace:
                     if lexeme in Splitter.token_type:
-                        add(lexeme_list, lexeme, Splitter.token_type[lexeme])
+                        lexeme_list.append(Splitter.Node(lexeme, Splitter.token_type[lexeme]))
                     else:
-                        add(lexeme_list, lexeme, 'Unk')
+                        lexeme_list.append(Splitter.Node(lexeme, 'Unk'))
 
                 lexeme = value
-                if value in Splitter.alphabet:
+                if value in Splitter.alphabet: #
                     state = 1
                 elif value in Splitter.digits:
                     state = 3
@@ -73,7 +94,7 @@ class Splitter:
                     lexeme += value
                     state = 2
                 else:
-                    add(lexeme_list, lexeme, 'word')
+                    lexeme_list.append(Splitter.Node(lexeme, 'word'))
                     lexeme = value
                     state = 0
 
@@ -81,7 +102,7 @@ class Splitter:
                 if value in Splitter.alphabet:
                     lexeme += value
                 else:
-                    add(lexeme_list, lexeme, 'word')
+                    lexeme_list.append(Splitter.Node(lexeme, 'word'))
                     lexeme = value
                     state = 0
 
@@ -92,7 +113,7 @@ class Splitter:
                     lexeme += value
                     state = 4
                 else:
-                    add(lexeme_list, lexeme, 'int')
+                    lexeme_list.append(Splitter.Node(lexeme, 'int'))
                     lexeme = value
                     state = 0
 
@@ -103,7 +124,7 @@ class Splitter:
                 elif value == Splitter.POINT:
                     lexeme += value
                 else:
-                    add(lexeme_list, lexeme, 'par')
+                    lexeme_list.append(Splitter.Node(lexeme, 'par'))
                     lexeme = value
                     state = 0
 
@@ -114,46 +135,35 @@ class Splitter:
                     lexeme += value
                     state = 4
                 else:
-                    add(lexeme_list, lexeme, 'float')
+                    lexeme_list.append(Splitter.Node(lexeme, 'float'))
                     lexeme = value
                     state = 0
 
             if debug:
                 print(state, lexeme)
 
-        add(lexeme_list, '#', 'end')
+        lexeme_list.append(Splitter.Node('#', 'end'))
         return lexeme_list
-
-    @staticmethod
-    def _post_processing(lexeme_list):
-        # Убираем лишние _ нижние подчеркивания
-
-        trigger = False
-        index = 0
-        value = lexeme_list[index].word
-        while value != '#':
-            if value == '_':
-                if not trigger:
-                    trigger = True
-                    index += 1
-                else:
-                    del lexeme_list[index]
-
-            else:
-                trigger = False
-                index += 1
-
-            value = lexeme_list[index].word
 
     @staticmethod
     def _get_sentences(lexeme_list):
         # Делим список токенов на предложения
 
         sentence_list = []
-        #for t in lexeme_list:
-        #    pass
+        for index, lex in enumerate(lexeme_list):
+            if lex.token_type == 'point':
+                print(lexeme_list[index - 1].word, lex.word, lexeme_list[index + 1].word)  # TODO
 
         return sentence_list
+
+    @staticmethod
+    def _get_morph(lexeme_list):
+        morph_list = []
+        for lex in lexeme_list:
+            morph_list.append(Splitter.morph.parse(lex))
+
+        return morph_list
+
 
 
 
