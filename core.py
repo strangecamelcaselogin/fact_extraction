@@ -58,7 +58,6 @@ class Core:
         self.report([table])
 
         # terms = extract_terms(lexemes, count=10)
-        # print(terms)
 
 if __name__ == '__main__':
     c = Core()
