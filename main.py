@@ -1,59 +1,19 @@
-from time import time
-from datetime import datetime
-from prettytable import PrettyTable
+from flask import Flask
+from flask import render_template, redirect, flash, \
+    request, session, abort, g, url_for
 
-from splitter import Splitter
-
-
-def load_text(filename):
-    with open(filename, 'r') as f:
-        text = f.read()
-
-    return text
+from core import Core
 
 
-def report(data):
-    rt = datetime.fromtimestamp(time())
-    filename = '{}.{}_{}.{}.txt'.format(rt.day, rt.month, rt.hour, rt.minute)
-    with open(filename, 'w') as f:
-        for d in data:
-            print(d, file=f)
+app = Flask(__name__)
 
 
-def extract_terms(lexeme_list, count=0, debug=False):
-    # Считаем количество использований каждой лексемы в тексте
-    # ПЕРЕДЕЛАТЬ
-
-    term_list = dict()
-    for lex in lexeme_list:
-        ftag = lex.morph[0].tag
-        fn_form = lex.morph[0].normal_form
-        if lex.token_type == 'word' and 'NOUN' in ftag:
-            if fn_form in term_list:
-                term_list[fn_form] += 1
-            else:
-                term_list[fn_form] = 1
-
-        if debug:
-            print('{} {}:: {}'.format(lex, (25 - len(lex)) * ' ', ftag))
-
-    term_list = list(reversed(sorted(term_list.items(), key=lambda x: x[1])))
-
-    return term_list if count == 0 else term_list[:count]
-
-########################################################################################################################
+@app.route('/')
+def hello_world():
+    temp_filename = 'test.txt'
+    c = Core()
+    c.run(temp_filename)
+    return 'web test'
 
 if __name__ == '__main__':
-    splt = Splitter()
-
-    lexemes, _ = splt.run(load_text('test.txt'))
-    print(*[lex.word for lex in lexemes])
-
-    table = PrettyTable(['word', 'token_type'])
-    for lex in lexemes:
-        table.add_row([lex.word, lex.token_type])
-
-    report([table])
-
-    #terms = extract_terms(lexemes, count=10)
-    #print(terms)
+    app.run(debug=True)
